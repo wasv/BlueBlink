@@ -14,16 +14,17 @@ OPENCM3_DIR     = libopencm3
 
 DEFS		+= -DSTM32F1
 DEFS		+= -I$(OPENCM3_DIR)/include
+DEFS		+= -I./include
 
 FP_FLAGS	?= -msoft-float
-ARCH_FLAGS = -mthumb -mcpu=cortex-m3 $(FP_FLAGS) -mfix-cortex-m3-ldrd
+ARCH_FLAGS  = -mthumb -mcpu=cortex-m3 $(FP_FLAGS) -mfix-cortex-m3-ldrd
 
-CFLAGS          += -Os -ggdb3 -std=c99 $(DEFS) $(ARCH_FLAGS)
+CFLAGS      += -Os -ggdb3 -std=c99 $(DEFS) $(ARCH_FLAGS)
 CPPFLAGS	+= -MD $(DEFS) $(ARCH_FLAGS)
 
-LDSCRIPT 	= bluepill.ld
+LDSCRIPT 	 = bluepill.ld
 
-LDFLAGS         += -static -nostartfiles
+LDFLAGS     += -static -nostartfiles
 LDFLAGS		+= -L$(OPENCM3_DIR)/lib -T$(LDSCRIPT)
 LDFLAGS		+= $(ARCH_FLAGS)
 
