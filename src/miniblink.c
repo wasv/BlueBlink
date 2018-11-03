@@ -46,8 +46,8 @@ static void tim3_setup(void)
 	/* Enable DMA request on update */
 	timer_update_on_overflow(TIM3);
 	timer_set_dma_on_update_event(TIM3);
-	timer_enable_update_event(TIM3);
 	timer_enable_irq(TIM3, TIM_DIER_TDE | TIM_DIER_UDE);
+	timer_enable_update_event(TIM3);
 
 	/* Clear fields of DMA control register */
 	TIM_DCR(TIM3) &= ~(TIM_BDTR_DBL_MASK | TIM_BDTR_DBA_MASK);
@@ -70,36 +70,36 @@ static void tim3_setup(void)
 	timer_enable_oc_output(TIM3, TIM_OC3);
 }
 
-void dma_setup(void) {
+static void dma_setup(void) {
 	/* Enable DMA 1. */
 	rcc_periph_clock_enable(RCC_DMA1);
 
 	/* Reset DMA 1 Channel 5 */
-	dma_channel_reset(DMA1, DMA_CHANNEL5);
+	dma_channel_reset(DMA1, DMA_CHANNEL3);
 
 	/* Reading from memory to perihperal */
-	dma_set_read_from_memory(DMA1, DMA_CHANNEL5);
+	dma_set_read_from_memory(DMA1, DMA_CHANNEL3);
 
 	/* Writing to same 16 bit address each time */
-	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL5);
-	dma_set_peripheral_size(DMA1, DMA_CHANNEL5, DMA_CCR_PSIZE_16BIT);
+	dma_disable_peripheral_increment_mode(DMA1, DMA_CHANNEL3);
+	dma_set_peripheral_size(DMA1, DMA_CHANNEL3, DMA_CCR_PSIZE_16BIT);
 	/* Specify peripheral register */
-	dma_set_peripheral_address(DMA1, DMA_CHANNEL5, (uint32_t)(&TIM_DMAR(TIM3)));
+	dma_set_peripheral_address(DMA1, DMA_CHANNEL3, (uint32_t)(&TIM_DMAR(TIM3)));
 
 	/* Reading from next 8 bit address each time */
-	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL5);
-	dma_set_memory_size(DMA1, DMA_CHANNEL5, DMA_CCR_MSIZE_8BIT);
+	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL3);
+	dma_set_memory_size(DMA1, DMA_CHANNEL3, DMA_CCR_MSIZE_8BIT);
 	/* Specify buffer location and length */
-	dma_set_memory_address(DMA1, DMA_CHANNEL5, (uint32_t)(&samples));
-	dma_set_number_of_data(DMA1, DMA_CHANNEL5, NUM_SAMPLES);
+	dma_set_memory_address(DMA1, DMA_CHANNEL3, (uint32_t)(&samples));
+	dma_set_number_of_data(DMA1, DMA_CHANNEL3, NUM_SAMPLES);
 
 	/* Enable circular mode, loops to start when done. */
-	dma_enable_circular_mode(DMA1, DMA_CHANNEL5);
+	dma_enable_circular_mode(DMA1, DMA_CHANNEL3);
 
 	/* Set DMA Priority to high */
-	dma_set_priority(DMA1, DMA_CHANNEL5, DMA_CCR_PL_HIGH);
+	dma_set_priority(DMA1, DMA_CHANNEL3, DMA_CCR_PL_HIGH);
 
-	dma_enable_channel(DMA1, DMA_CHANNEL5);
+	dma_enable_channel(DMA1, DMA_CHANNEL3);
 }
 
 int main(void)
