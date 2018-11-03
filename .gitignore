@@ -1,9 +1,6 @@
-*.o
-*.d
-*.bin
 .#*
 *.swp
-*.elf
 *.log
 .vagrant
 TAGS
+build/

@@ -52,9 +52,9 @@ static void tim3_setup(void)
 	/* Clear fields of DMA control register */
 	TIM_DCR(TIM3) &= ~(TIM_BDTR_DBL_MASK | TIM_BDTR_DBA_MASK);
 	/* DMA Burst Length is 1, leave field cleared. */
-	// TIM_DCR(TIM3) |= (TIM_BDTR_DBL_MASK && 0);
+	// TIM_DCR(TIM3) |= (TIM_BDTR_DBL_MASK & 0);
 	/* DMA writes should go to CCR3 (byte offset 0x3C, register 15) */
-	TIM_DCR(TIM3) |= (TIM_BDTR_DBA_MASK && 0x0F);
+	TIM_DCR(TIM3) |= (TIM_BDTR_DBA_MASK & 0x0F);
 	
 	/* Enable Timer */
 	timer_enable_counter(TIM3);
@@ -90,7 +90,7 @@ void dma_setup(void) {
 	dma_enable_memory_increment_mode(DMA1, DMA_CHANNEL5);
 	dma_set_memory_size(DMA1, DMA_CHANNEL5, DMA_CCR_MSIZE_8BIT);
 	/* Specify buffer location and length */
-	dma_set_memory_address(DMA1, DMA_CHANNEL5, (uint32_t)samples);
+	dma_set_memory_address(DMA1, DMA_CHANNEL5, (uint32_t)(&samples));
 	dma_set_number_of_data(DMA1, DMA_CHANNEL5, NUM_SAMPLES);
 
 	/* Enable circular mode, loops to start when done. */
