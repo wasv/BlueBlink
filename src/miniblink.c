@@ -37,7 +37,6 @@ static void tim3_setup(void)
 	timer_set_oc_polarity_high(TIM3, TIM_OC3);
 
 	/* Set 256 tick period. */
-	//timer_enable_preload(TIM3);
 	timer_set_period(TIM3, SAMPL_RESN);
 
 	/* Start at 10% duty cycle. */
