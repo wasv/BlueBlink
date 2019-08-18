@@ -5,7 +5,8 @@ LD = gcc
 OBJDUMP = objdump
 OBJCOPY = objcopy
 
-OBJS        += build/miniblink.o
+OBJS         = $(patsubst src/%.c,build/%.o,$(wildcard src/*.c))
+#OBJS        += $(patsubst src/periph/%.c,build/periph/%.o,$(wildcard src/periph/*.c))
 DEPS         = $(OBJS:%.o=%.d)
 
 DEVICE = stm32f103c8
@@ -20,13 +21,14 @@ DEFS		+= -I./include
 FP_FLAGS	?= -msoft-float
 ARCH_FLAGS  = -mthumb -mcpu=cortex-m3 $(FP_FLAGS) -mfix-cortex-m3-ldrd
 
-CFLAGS      += -Os -ggdb3 -std=c99 $(DEFS) $(ARCH_FLAGS)
+CFLAGS      += -ggdb3 -std=c99 -Wall -Wpedantic
+CXXFLAGS    += -ggdb3
 CPPFLAGS	+= -MD $(DEFS) $(ARCH_FLAGS)
 
 LDSCRIPT 	 = bluepill.ld
 
 LDFLAGS     += -static -nostartfiles
-LDFLAGS		+= -L$(OPENCM3_DIR)/lib -T$(LDSCRIPT)
+LDFLAGS		+= -L$(OPENCM3_DIR)/lib
 LDFLAGS		+= $(ARCH_FLAGS)
 
 LDLIBS	 	+= -Wl,-lc -Wl,-lgcc -Wl,-lnosys -Wl,-l$(LIBNAME)
@@ -37,7 +39,8 @@ MAKEFLAGS += --no-print-directory
 .SECONDARY:
 .PHONY: clean all libopencm3 flash
 
-all: build/binary.elf build/binary.bin
+all: build/firmware.elf build/firmware.bin
+st:  build/firmware-st.elf build/firmware-st.bin
 
 %.bin: %.elf
 	printf "  OBJCOPY $(*).bin\n"
@@ -47,27 +50,30 @@ all: build/binary.elf build/binary.bin
 	printf "  OBJDUMP $(*).list\n"
 	$(PREFIX)$(OBJDUMP) -S $(*).elf > $(*).list
 
-%.elf: $(OBJS) $(LDSCRIPT)
+build/%.elf: $(OBJS) %.ld
 	printf "  LD      $(*).elf\n"
-	$(PREFIX)$(LD) $(LDFLAGS) $(OBJS) $(LDLIBS) -o $(*).elf
+	$(PREFIX)$(LD) $(LDFLAGS) -T$(*).ld $(OBJS) $(LDLIBS) -o $@
 
-build/%.o: src/%.c | libopencm3 build/.keep
+build/%.o: src/%.c | libopencm3
+	@mkdir -p $(@D)
 	printf "  CC      $(*).c\n"
 	$(PREFIX)$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
-build/%.o: src/%.cpp | libopencm3 build/.keep
+build/%.o: src/%.cpp | libopencm3
+	@mkdir -p $(@D)
 	printf "  CXX     $(*).cpp\n"
 	$(PREFIX)$(CXX) $(CXXFLAGS) $(CPPFLAGS) -o $@ -c $<
 
-build/.keep:
-	mkdir -p build
-	touch build/.keep
-
-flash: build/binary.bin
+flash: build/firmware.bin
 	echo "Uploading to board..."
 	echo "Push reset."
 	sleep 2
 	dfu-util -d 1EAF:0003 -a 2 -D $< -R
+
+flash-st: build/firmware-st.bin
+	echo "Flashing firmware in 3s..."
+	sleep 3
+	openocd -c "log_output openocd.log" -f debug/bluepill-flash.cfg
 
 clean:
 	printf "  CLEAN\n"
